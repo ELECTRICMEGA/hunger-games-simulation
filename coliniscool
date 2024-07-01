@@ -1,0 +1,144 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const mainMenu = document.getElementById("main-menu");
+    const simulation = document.getElementById("simulation");
+    const participantsDiv = document.getElementById("participants");
+    const confirmButton = document.getElementById("confirmButton");
+    const newSimulation = document.getElementById("newSimulation");
+    const statusDiv = document.getElementById("status");
+    const numParticipantsInput = document.getElementById("numParticipants");
+    const autoFillNamesButton = document.getElementById("autoFillNames");
+    const startSimulationButton = document.getElementById("startSimulation");
+
+    let participants = [];
+    let round = 0;
+
+    autoFillNamesButton.addEventListener("click", () => {
+        const numParticipants = numParticipantsInput.value;
+        participantsDiv.innerHTML = "";
+        participants = [];
+        for (let i = 0; i < numParticipants; i++) {
+            const name = `Participant ${i + 1}`;
+            participants.push({ name, health: 100, status: "healthy" });
+            const div = document.createElement("div");
+            div.className = "participant healthy";
+            div.innerText = `${name}\nHealth: 100\nStatus: Healthy`;
+            participantsDiv.appendChild(div);
+        }
+    });
+
+    startSimulationButton.addEventListener("click", () => {
+        mainMenu.style.display = "none";
+        simulation.style.display = "block";
+    });
+
+    confirmButton.addEventListener("click", () => {
+        statusDiv.innerHTML = `<h2>Round ${++round}</h2>`;
+        participants.forEach((participant, index) => {
+            const action = Math.random();
+            if (action < 0.5) {
+                participant.health -= Math.floor(Math.random() * 20);
+                participant.status = participant.health <= 0 ? "dead" : "injured";
+            }
+            updateParticipantDiv(index);
+        });
+
+        updateStatus();
+    });
+
+    newSimulation.addEventListener("click", () => {
+        mainMenu.style.display = "block";
+        simulation.style.display = "none";
+        participants = [];
+        participantsDiv.innerHTML = "";
+        statusDiv.innerHTML = "";
+        numParticipantsInput.value = "";
+    });
+
+    function updateParticipantDiv(index) {
+        const participantDivs = participantsDiv.getElementsByClassName("participant");
+        const participant = participants[index];
+        const div = participantDivs[index];
+        div.className = `participant ${participant.status}`;
+        div.innerText = `${participant.name}\nHealth: ${participant.health}\nStatus: ${participant.status.charAt(0).toUpperCase() + participant.status.slice(1)}`;
+    }
+
+    function updateStatus() {
+        const alive = participants.filter(p => p.health > 0);
+        if (alive.length === 1) {
+            statusDiv.innerHTML += `<h2>${alive[0].name} is the winner!</h2>`;
+            const sortedParticipants = participants.sort((a, b) => b.health - a.health);
+            statusDiv.innerHTML += `<h3>Final Placements</h3>`;
+            sortedParticipants.forEach((p, index) => {
+                statusDiv.innerHTML += `<p>${index + 1}. ${p.name} - ${p.status.charAt(0).toUpperCase() + p.status.slice(1)}</p>`;
+            });
+        }
+    }
+});
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+}
+
+#main-menu, #simulation {
+    margin-top: 50px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+#participants {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.participant {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #000;
+    width: 150px;
+}
+
+.dead {
+    background-color: red;
+    color: white;
+}
+.injured {
+    background-color: yellow;
+}
+.healthy {
+    background-color: green;
+    color: white;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunger Games Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="main-menu">
+        <h1>Hunger Games Simulation</h1>
+        <form id="settings-form">
+            <label for="numParticipants">Number of Participants:</label>
+            <input type="number" id="numParticipants" name="numParticipants" min="2" max="24">
+            <button type="button" id="autoFillNames">Auto-Fill Names</button>
+            <button type="button" id="startSimulation">Start Simulation</button>
+        </form>
+    </div>
+    <div id="simulation" style="display:none;">
+        <h1>Simulation</h1>
+        <div id="participants"></div>
+        <button id="confirmButton">Confirm</button>
+        <div id="status"></div>
+        <button id="newSimulation">Create New Simulation</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
